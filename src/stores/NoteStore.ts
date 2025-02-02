@@ -1,6 +1,9 @@
-import Note from "@/interfaces/note";
+import { getNotesCollaborationAPI } from "@/swagger/apis/notesCollaborationAPI";
+import { Note } from "@/swagger/model";
+import axios from "axios";
 import { makeAutoObservable } from "mobx";
 
+const api = getNotesCollaborationAPI();
 class NotesStore {
   notes: Note[] = [{ id: 1, title: "Free", description: "Wow" }];
   selectedNote: Note | null = null;
@@ -10,8 +13,17 @@ class NotesStore {
   }
 
   // Action to add a note
-  addNote(note: Note) {
-    this.notes.push(note);
+  async addNote(note: Note): Promise<Note | null> {
+    console.log(note);
+    const testCall = await axios.get("/");
+    console.log(testCall);
+
+    const newNote = await api.createNote(note);
+    if (newNote) {
+      this.notes.push(newNote.data);
+      return newNote.data;
+    }
+    return null;
   }
 
   // Action to select a note
@@ -23,7 +35,8 @@ class NotesStore {
   }
 
   // Action to remove a note
-  removeNote(noteId: number) {
+  async removeNote(noteId: number) {
+    await api.deleteNote(noteId);
     this.notes = this.notes.filter((note) => note.id !== noteId);
   }
 }

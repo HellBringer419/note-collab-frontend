@@ -1,20 +1,29 @@
-import "./App.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import ModeToggle from "@/components/mode-toggle";
-import NotesList from "@/components/notes-list";
-import NoteEditor from "@/components/note-editor";
-import notesStore from "@/stores/NoteStore";
-import { observer } from "mobx-react-lite";
+import axios from "axios";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import LoginPage from "./components/login-page";
+import ForgotPasswordPage from "./components/forgot-password-page";
+import RegisterPage from "./components/register-page";
+import HomePage from "./components/home-page";
 
-const App = observer(() => {
+axios.defaults.baseURL =
+  import.meta.env.REACT_APP_BASE_BACKEND_URL ?? "http://localhost:8080/api/v1/";
+
+const App = () => {
   return (
     <>
-      <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-        <ModeToggle />
-        {notesStore.selectedNote ? <NoteEditor /> : <NotesList />}
-      </ThemeProvider>
+      <Router>
+        <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+          </Routes>
+        </ThemeProvider>
+      </Router>
     </>
   );
-});
+};
 
 export default App;

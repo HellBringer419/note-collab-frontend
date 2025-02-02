@@ -14,11 +14,13 @@ import notesStore from "@/stores/NoteStore";
 import ShareNote from "./share-note";
 
 const NotesList = observer(() => {
-  const createNewNote = () => {
-    const newNote = { id: 0, title: "", description: "" };
-    notesStore.addNote(newNote);
-
-    notesStore.selectNote(newNote.id);
+  const createNewNote = async () => {
+    const newNote = await notesStore.addNote({
+      id: 0,
+      title: "",
+      description: "",
+    });
+    if (newNote && newNote.id) notesStore.selectNote(newNote.id);
   };
   return (
     <div className="container mx-auto p-6">

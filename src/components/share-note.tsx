@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Share2 } from "lucide-react";
-import Note from "@/interfaces/note";
+import { Note } from "@/swagger/model";
 
 interface ShareNoteProps {
   note: Note;
