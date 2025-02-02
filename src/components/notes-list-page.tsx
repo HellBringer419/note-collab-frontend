@@ -12,16 +12,18 @@ import { observer } from "mobx-react-lite";
 import { PlusCircle } from "lucide-react";
 import notesStore from "@/stores/NoteStore";
 import ShareNote from "./share-note";
+import { useEffect } from "react";
+import userStore from "@/stores/UserStore";
 
 const NotesList = observer(() => {
   const createNewNote = async () => {
-    const newNote = await notesStore.addNote({
-      id: 0,
-      title: "",
-      description: "",
-    });
+    const newNote = await notesStore.addNote("", "");
     if (newNote && newNote.id) notesStore.selectNote(newNote.id);
   };
+
+  useEffect(() => {
+    notesStore.refreshNotes();
+  }, [userStore.token]);
   return (
     <div className="container mx-auto p-6">
       <h1 className="text-3xl font-bold mb-6">Collaborative Notes</h1>
@@ -37,8 +39,6 @@ const NotesList = observer(() => {
             key={note.id}
             className="cursor-pointer hover:shadow-lg transition-shadow"
             onClick={() => {
-              console.log("Card got clicker");
-
               notesStore.selectNote(note.id);
             }}
           >
@@ -47,7 +47,7 @@ const NotesList = observer(() => {
             </CardHeader>
             <CardContent>
               <p className="text-gray-600 mb-4">
-                This is a preview of Note {note.id}. Click to edit...
+                {note.description?.substring(0, 15)}...
               </p>
               <div className="flex items-center space-x-2">
                 <Avatar className="h-6 w-6">

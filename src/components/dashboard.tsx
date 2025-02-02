@@ -1,4 +1,4 @@
-import "./App.css";
+import "../App.css";
 import notesStore from "@/stores/NoteStore";
 import NoteEditor from "./note-editor-page";
 import NotesList from "./notes-list-page";

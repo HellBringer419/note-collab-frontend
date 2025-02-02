@@ -11,7 +11,7 @@ import {
 import notesStore from "@/stores/NoteStore";
 import { ChevronLeft, Plus } from "lucide-react";
 import { observer } from "mobx-react-lite";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ShareNote from "./share-note";
 
 const NoteEditor = observer(() => {
@@ -20,6 +20,10 @@ const NoteEditor = observer(() => {
   const [description, setDescription] = useState(
     notesStore.selectedNote?.description || "",
   );
+
+  useEffect(() => {
+    notesStore.updateNote(notesStore.selectedNote?.id ?? 0, title, description);
+  }, [title, description]);
 
   return (
     <TooltipProvider>
