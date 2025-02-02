@@ -1,24 +1,20 @@
 import "./App.css";
-import { ThemeProvider } from "./components/theme-provider";
-import ModeToggle from "./components/mode-toggle";
-import CardBasedDesign from "./components/ui2/CardBasedDesign";
+import { ThemeProvider } from "@/components/theme-provider";
+import ModeToggle from "@/components/mode-toggle";
+import NotesList from "@/components/notes-list";
+import NoteEditor from "@/components/note-editor";
+import notesStore from "@/stores/NoteStore";
+import { observer } from "mobx-react-lite";
 
-function App() {
+const App = observer(() => {
   return (
     <>
       <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
         <ModeToggle />
-
-        <CardBasedDesign />
+        {notesStore.selectedNote ? <NoteEditor /> : <NotesList />}
       </ThemeProvider>
     </>
   );
-}
+});
 
-/**
-      <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-        <CardBasedDesign />
-        <ImmersiveDesign />
-        <NoteEditor />
-        */
 export default App;
