@@ -6,10 +6,11 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export interface PasswordReset {
+export type InviteCollaborator200 = {
+  /** ID of the created collaboration. */
   id?: number;
-  otp?: string;
-  expiry?: string;
+  /** ID of the user being invited to collaborate. */
   userId?: number;
-  createdAt?: string;
-}
+  /** ID of the note that the collaboration is for. */
+  noteId?: number;
+};

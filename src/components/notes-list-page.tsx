@@ -1,19 +1,20 @@
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
+  CardFooter,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { observer } from "mobx-react-lite";
-import { PlusCircle } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import notesStore from "@/stores/NoteStore";
-import ShareNote from "./share-note";
-import { useEffect } from "react";
 import userStore from "@/stores/UserStore";
+import dayjs from "dayjs";
+import { PlusCircle } from "lucide-react";
+import { observer } from "mobx-react-lite";
+import { useEffect } from "react";
+import ShareNote from "./share-note";
 
 const NotesList = observer(() => {
   const createNewNote = async () => {
@@ -50,10 +51,18 @@ const NotesList = observer(() => {
                 {note.description?.substring(0, 15)}...
               </p>
               <div className="flex items-center space-x-2">
-                <Avatar className="h-6 w-6">
-                  <AvatarImage src="/placeholder-avatar.jpg" />
-                  <AvatarFallback>JD</AvatarFallback>
-                </Avatar>
+                {note.Collaborations?.map((collab) => (
+                  <Avatar className="h-6 w-6" key={collab.id}>
+                    <AvatarImage src={collab?.User?.avatar} />
+                    <AvatarFallback>
+                      {collab.User?.name
+                        ?.split(" ")
+                        .map((name) => name.charAt(0))
+                        .join("")
+                        .toUpperCase() ?? "User"}
+                    </AvatarFallback>
+                  </Avatar>
+                ))}
                 <Avatar className="h-6 w-6">
                   <AvatarImage src="/placeholder-avatar-2.jpg" />
                   <AvatarFallback>AB</AvatarFallback>
@@ -67,7 +76,7 @@ const NotesList = observer(() => {
             >
               <ShareNote note={note} />
               <span className="text-sm text-gray-500">
-                Last edited 2 hours ago
+                {dayjs(note.createdAt).fromNow()}
               </span>
             </CardFooter>
           </Card>

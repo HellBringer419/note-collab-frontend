@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,6 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Share2 } from "lucide-react";
 import { Note } from "@/swagger/model";
+import notesStore from "@/stores/NoteStore";
 
 interface ShareNoteProps {
   note: Note;
@@ -17,9 +18,11 @@ interface ShareNoteProps {
 const ShareNote = ({ note }: ShareNoteProps) => {
   const [collaborators, setCollaborators] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const handleShare = () => {
+  const handleShare = async (e: FormEvent) => {
+    e.preventDefault();
     // Here you would implement the logic to share the note
     console.log("Sharing note", note.id, " with:", collaborators);
+    await notesStore.shareNote(note.id, collaborators);
     setIsDialogOpen(false);
   };
   return (
@@ -34,14 +37,16 @@ const ShareNote = ({ note }: ShareNoteProps) => {
           <DialogHeader>
             <DialogTitle>Share Note: {note.title} </DialogTitle>
           </DialogHeader>
-          <Input
-            placeholder="Enter collaborator emails"
-            type="email"
-            value={collaborators}
-            onChange={(e) => setCollaborators(e.target.value)}
-          />
+          <form onSubmit={handleShare}>
+            <Input
+              placeholder="Enter collaborator emails"
+              type="email"
+              value={collaborators}
+              onChange={(e) => setCollaborators(e.target.value)}
+            />
 
-          <Button onClick={handleShare}> Send Invites </Button>
+            <Button type="submit"> Send Invites </Button>
+          </form>
         </DialogContent>
       </Dialog>
     </>

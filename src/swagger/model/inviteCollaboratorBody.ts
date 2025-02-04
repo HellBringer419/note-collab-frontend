@@ -6,10 +6,9 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export interface PasswordReset {
-  id?: number;
-  otp?: string;
-  expiry?: string;
-  userId?: number;
-  createdAt?: string;
-}
+export type InviteCollaboratorBody = {
+  /** The ID of the note to collaborate on. */
+  noteId: number;
+  /** The email of the user to invite. */
+  email: string;
+};

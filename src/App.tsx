@@ -1,4 +1,6 @@
 import { ThemeProvider } from "@/components/theme-provider";
+import dayjs from "dayjs";
+import relativeTimePlugin from "dayjs/plugin/relativeTime";
 import axios from "axios";
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import LoginPage from "./components/login-page";
@@ -9,6 +11,8 @@ import DashBoard from "./components/dashboard";
 
 axios.defaults.baseURL =
   import.meta.env.REACT_APP_BASE_BACKEND_URL ?? "http://localhost:8080/api/v1/";
+
+dayjs.extend(relativeTimePlugin);
 
 const App = () => {
   return (
