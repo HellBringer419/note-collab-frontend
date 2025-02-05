@@ -9,12 +9,16 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import notesStore from "@/stores/NoteStore";
-import { ChevronLeft, Plus } from "lucide-react";
+import { ChevronLeft, Trash2 } from "lucide-react";
 import { observer } from "mobx-react-lite";
 import { useEffect, useState } from "react";
 import ShareNote from "./share-note";
+import { useNavigate, useParams } from "react-router-dom";
 
 const NoteEditor = observer(() => {
+  const navigate = useNavigate();
+  const params = useParams();
+
   // const [sidebarOpen, setSidebarOpen] = useState(false);
   const [title, setTitle] = useState(notesStore.selectedNote?.title || "");
   const [description, setDescription] = useState(
@@ -22,12 +26,33 @@ const NoteEditor = observer(() => {
   );
 
   useEffect(() => {
-    notesStore.updateNote(notesStore.selectedNote?.id ?? 0, title, description);
+    if (notesStore.selectedNote?.id)
+      notesStore.updateNote(notesStore.selectedNote?.id, title, description);
   }, [title, description]);
+
+  useEffect(() => {
+    if (params.noteId) {
+      notesStore.selectNote(parseInt(params.noteId) ?? null);
+      if (notesStore.selectedNote?.id)
+        notesStore.getNoteDetails(notesStore.selectedNote?.id);
+    }
+  });
+
+  const handleBackButton = () => {
+    notesStore.selectNote(null);
+    navigate("/dashboard");
+  };
+
+  const handleDelete = async () => {
+    if (notesStore.selectedNote?.id) {
+      await notesStore.removeNote(notesStore.selectedNote?.id);
+      navigate("/dashboard");
+    }
+  };
 
   return (
     <TooltipProvider>
-      <div className="container mx-auto p-6 flex w-screen">
+      <div className="min-h-screen flex flex-col justify-center py-12 px-6 lg:px-12 md:w-screen">
         {/* Collapsible Sidebar */}
         {/* <div */}
         {/*   className={`bg-white border-r transition-all duration-300 ease-in-out ${sidebarOpen ? "w-64" : "w-0"}`} */}
@@ -52,32 +77,50 @@ const NoteEditor = observer(() => {
 
         {/* Main content */}
         <div className="flex-1 flex flex-col">
-          <header className="border-b p-4 flex justify-between items-center">
-            <div className="flex items-center">
+          <header className="border-b p-4 flex flex-col md:flex-row justify-between items-center">
+            <div className="flex items-center mb-2 md:mb-0">
               <Button
                 variant="outline"
-                onClick={() => notesStore.selectNote(null)}
+                onClick={handleBackButton}
                 // onClick={() => setSidebarOpen(!sidebarOpen)}
               >
                 {/* {sidebarOpen ? <ChevronLeft /> : <ChevronRight />} */}
                 <ChevronLeft />
               </Button>
               <Input
-                className="w-64 ml-4"
+                className="w-64 ml-4 text-lg md:text-2xl"
                 placeholder="Note title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
               />
             </div>
-            <div className="flex items-center space-x-2">
-              <Avatar className="h-8 w-8">
-                <AvatarImage src="../assets/react.svg" />
-                <AvatarFallback>JE</AvatarFallback>
-              </Avatar>
-              <Avatar className="h-8 w-8">
-                <AvatarImage src="/placeholder-avatar-2.jpg" />
-                <AvatarFallback>AB</AvatarFallback>
-              </Avatar>
+            <div className="flex items-center space-x-2 self-end">
+              {notesStore.selectedNote?.Collaborations?.slice(0, 3).map(
+                (collab) => (
+                  <Avatar
+                    className="h-6 w-6"
+                    key={collab.id}
+                    title={collab.User?.name}
+                  >
+                    <AvatarImage src={collab?.User?.avatar} />
+                    <AvatarFallback>
+                      {collab.User?.name
+                        ?.split(" ")
+                        .map((name) => name.charAt(0))
+                        .join("")
+                        .toUpperCase() ?? "User"}
+                    </AvatarFallback>
+                  </Avatar>
+                ),
+              )}
+              {notesStore.selectedNote?.Collaborations?.length &&
+              notesStore.selectedNote?.Collaborations?.length > 3 ? (
+                <span className="text-sm text-gray-500">
+                  +{notesStore.selectedNote?.Collaborations.length - 3} more
+                </span>
+              ) : (
+                <></>
+              )}
               {notesStore.selectedNote ? (
                 <ShareNote note={notesStore.selectedNote} />
               ) : (
@@ -89,7 +132,7 @@ const NoteEditor = observer(() => {
           </header>
           <main className="bg-secondary/90 flex-1 p-6">
             <Textarea
-              className="min-h-[calc(100vh-200px)] w-auto max-w-full text-lg border-0 focus:ring-0"
+              className="min-h-[calc(100vh-200px)] max-w-full text-base border-0 focus:ring-0"
               placeholder="Start typing your note here..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -103,12 +146,13 @@ const NoteEditor = observer(() => {
             <Button
               className="absolute bottom-10 right-6 rounded-full h-14 w-14"
               size="icon"
+              onClick={handleDelete}
             >
-              <Plus className="h-6 w-6" />
+              <Trash2 className="h-6 w-6" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Create new item</p>
+            <p>Delete</p>
           </TooltipContent>
         </Tooltip>
 

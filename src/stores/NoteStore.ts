@@ -44,6 +44,12 @@ class NotesStore {
         : this.notes.find((note) => note.id === noteId) || null;
   }
 
+  async getNoteDetails(noteId: number) {
+    const noteResponse = await api.getNote(noteId);
+    if (noteResponse.data) return noteResponse.data;
+    return null;
+  }
+
   // Action to remove a note
   async removeNote(noteId: number) {
     const token = userStore.token;
