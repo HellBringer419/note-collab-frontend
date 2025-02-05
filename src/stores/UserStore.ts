@@ -10,6 +10,7 @@ class UserStore {
 
   constructor() {
     makeAutoObservable(this);
+    this.token = localStorage.getItem("token") || null; // Load token from localStorage if available
   }
 
   // Set user data after successful login

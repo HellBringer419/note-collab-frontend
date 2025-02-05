@@ -51,7 +51,7 @@ const NotesList = observer(() => {
                 {note.description?.substring(0, 15)}...
               </p>
               <div className="flex items-center space-x-2">
-                {note.Collaborations?.map((collab) => (
+                {note.Collaborations?.slice(0, 3).map((collab) => (
                   <Avatar className="h-6 w-6" key={collab.id}>
                     <AvatarImage src={collab?.User?.avatar} />
                     <AvatarFallback>
@@ -63,11 +63,12 @@ const NotesList = observer(() => {
                     </AvatarFallback>
                   </Avatar>
                 ))}
-                <Avatar className="h-6 w-6">
-                  <AvatarImage src="/placeholder-avatar-2.jpg" />
-                  <AvatarFallback>AB</AvatarFallback>
-                </Avatar>
-                <span className="text-sm text-gray-500">+2 more</span>
+                {note.Collaborations?.length &&
+                note.Collaborations?.length > 3 ? (
+                  <span className="text-sm text-gray-500">+2 more</span>
+                ) : (
+                  <></>
+                )}
               </div>
             </CardContent>
             <CardFooter
