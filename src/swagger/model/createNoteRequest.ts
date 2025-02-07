@@ -7,7 +7,8 @@
  */
 
 export interface CreateNoteRequest {
+  /** @minLength 3 */
   title: string;
-  description: string;
-  createdBy: number;
+  /** @nullable */
+  description?: string | null;
 }

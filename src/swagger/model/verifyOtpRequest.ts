@@ -8,5 +8,6 @@
 
 export interface VerifyOtpRequest {
   email: string;
+  /** @minLength 6 */
   otp: string;
 }

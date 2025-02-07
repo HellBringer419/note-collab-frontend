@@ -7,6 +7,8 @@
  */
 
 export interface UpdateNoteRequest {
+  /** @minLength 3 */
   title: string;
-  description: string;
+  /** @nullable */
+  description?: string | null;
 }
