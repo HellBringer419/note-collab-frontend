@@ -1,6 +1,6 @@
 import { getNotesCollaborationAPI } from "@/swagger/apis/notesCollaborationAPI";
 import { Note } from "@/swagger/model";
-import { makeAutoObservable } from "mobx";
+import { makeAutoObservable, runInAction } from "mobx";
 import userStore from "./UserStore";
 
 const api = getNotesCollaborationAPI();
@@ -16,7 +16,9 @@ class NotesStore {
     const response = await api.getNotes({
       headers: { Authorization: `Bearer ${token}` },
     });
-    this.notes = response.data;
+    runInAction(() => {
+      this.notes = response.data;
+    });
     return response.data;
   }
 
@@ -31,33 +33,52 @@ class NotesStore {
       { headers: { Authorization: `Bearer ${token}` } },
     );
     if (newNote) {
-      this.notes.push(newNote.data);
+      runInAction(() => {
+        this.notes.push(newNote.data);
+      });
       return newNote.data;
     }
     return null;
   }
 
-  async getNoteDetails(noteId: number) {
-    const noteResponse = await api.getNote(noteId);
-    if (noteResponse.data) return noteResponse.data;
+  async getNoteDetails(noteId: number): Promise<Note | null> {
+    const token = userStore.token;
+    const noteResponse = await api.getNote(noteId, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (noteResponse.data) {
+      runInAction(() => {
+        const idx = this.notes.findIndex((note) => note.id);
+        this.notes[idx] = noteResponse.data;
+      });
+      return noteResponse.data;
+    }
     return null;
   }
 
   // Action to remove a note
-  async removeNote(noteId: number,
-    isMine: boolean = true,
-  ) {
+  async removeNote(noteId: number, isMine: boolean = true) {
     if (isMine) {
       const token = userStore.token;
 
-    await api.deleteNote(noteId, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+      await api.deleteNote(noteId, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      runInAction(() => {
+        this.notes = this.notes.filter((note) => note.id !== noteId);
+      });
+    } else {
+      this.notes = this.notes.filter((note) => note.id !== noteId);
     }
-    this.notes = this.notes.filter((note) => note.id !== noteId);
   }
 
-  async updateNote(noteId: number, title: string, description?: string | null, isMine: boolean = true) {
+  async updateNote(
+    noteId: number,
+    title: string,
+    description?: string | null,
+    isMine: boolean = true,
+  ) {
     // should addd debounce
     if (isMine) {
       const token = userStore.token;
@@ -70,14 +91,17 @@ class NotesStore {
         { headers: { Authorization: `Bearer ${token}` } },
       );
       if (updatedNote.data) {
-        this.notes[this.notes.findIndex((note) => note.id === noteId)] =
-        updatedNote.data;
+        runInAction(() => {
+          this.notes[this.notes.findIndex((note) => note.id === noteId)] =
+            updatedNote.data;
+        });
       }
     } else {
       this.notes[this.notes.findIndex((note) => note.id === noteId)] = {
         id: noteId,
-        title, description: description || undefined
-      }
+        title,
+        description: description || undefined,
+      };
     }
   }
 

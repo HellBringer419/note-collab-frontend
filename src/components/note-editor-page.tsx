@@ -1,4 +1,5 @@
 import { io, Socket } from "socket.io-client";
+import { debounce } from "lodash";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +13,7 @@ import {
 import notesStore from "@/stores/NoteStore";
 import { ChevronLeft, Trash2 } from "lucide-react";
 import { observer } from "mobx-react-lite";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import ShareNote from "./share-note";
 import { useNavigate, useParams } from "react-router-dom";
 import userStore from "@/stores/UserStore";
@@ -24,11 +25,20 @@ const NoteEditor = observer(() => {
 
   // const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
-  const [title, setTitle] = useState(selectedNote?.title || "New Note");
-  const [description, setDescription] = useState(
-    selectedNote?.description || null,
-  );
   const [socket, setSocket] = useState<Socket | null>(null);
+
+  useEffect(() => {
+    if (params.noteId) {
+      const fetchData = async () => {
+        const currentSelectedNote = await notesStore.getNoteDetails(
+          parseInt(params.noteId ?? ""),
+        );
+        setSelectedNote(currentSelectedNote);
+      };
+      if (socket) socket.emit("subscribe-note", parseInt(params.noteId));
+      fetchData();
+    }
+  }, [params.noteId]);
 
   // Initialize WebSocket connection
   useEffect(() => {
@@ -50,22 +60,21 @@ const NoteEditor = observer(() => {
     });
 
     newSocket.on("note_update", async (data: Note) => {
-      if (data.id === parseInt(params.noteId!)) {
-        
-        if (data.title) {
-          setTitle(data.title);
-        }
-        if (data.description) {
-          setDescription(data.description);
-        }
-        
+      if (data.id === selectedNote?.id) {
+        setSelectedNote(data);
+
         if (selectedNote?.id)
-          await notesStore.updateNote(selectedNote?.id, title, description, false);
+          await notesStore.updateNote(
+            selectedNote?.id,
+            selectedNote.title ?? "New",
+            selectedNote.description,
+            false,
+          );
       }
     });
 
     newSocket.on("note_delete", async (noteId) => {
-      if (noteId === parseInt(params.noteId!)) {
+      if (noteId === selectedNote?.id) {
         setSelectedNote(null);
         if (selectedNote?.id) {
           await notesStore.removeNote(selectedNote?.id, false);
@@ -79,36 +88,44 @@ const NoteEditor = observer(() => {
     return () => {
       newSocket.disconnect();
     };
-  }, [params.noteId, userStore.token, navigate]);
-
-  useEffect(() => {
-    if (params.noteId) {
-      const fetchData = async () => {
-        const currentSelectedNote = await notesStore.getNoteDetails(
-          parseInt(params.noteId ?? ""),
-        );
-        setSelectedNote(currentSelectedNote);
-      };
-      if (socket) socket.emit("subscribe-note", parseInt(params.noteId));
-      fetchData();
-    }
-  }, [params.noteId]);
+  }, [userStore.token, params]);
 
   const handleBackButton = () => {
     setSelectedNote(null);
     navigate("/dashboard");
   };
 
+  const debounceChangeDescription = useCallback(
+    debounce(
+      async (id: number, title: string, description: string) => {
+        await notesStore.updateNote(id, title, description, true);
+      },
+      2_000,
+      { trailing: true, leading: false },
+    ),
+    [],
+  ); // 2sec debounce
+
   const handleChangeTitle = (title: string) => {
-    setTitle(title);
-    if (selectedNote?.id)
-      notesStore.updateNote(selectedNote?.id, title, description, true);
-  }
+    if (selectedNote && selectedNote.id)
+      setSelectedNote({ ...selectedNote, title });
+    notesStore.updateNote(
+      selectedNote?.id ?? 0,
+      title,
+      selectedNote?.description,
+      true,
+    );
+  };
   const handleChangeDescription = (description: string) => {
-    setDescription(description);
-    if (selectedNote?.id)
-      notesStore.updateNote(selectedNote?.id, title, description, true);
-  }
+    if (selectedNote?.id) {
+      setSelectedNote({ ...selectedNote, description });
+      debounceChangeDescription(
+        selectedNote.id,
+        selectedNote.title,
+        description,
+      );
+    }
+  };
 
   const handleDelete = async () => {
     if (selectedNote?.id) {
@@ -160,8 +177,8 @@ const NoteEditor = observer(() => {
               <Input
                 className="w-64 ml-4 text-lg md:text-2xl"
                 placeholder="Note title"
-                value={title}
-                onChange={(e) => handleChangeTitle(e.target.value)}
+                value={selectedNote?.title}
+                onBlur={(e) => handleChangeTitle(e.target.value)}
               />
             </div>
             <div className="flex items-center space-x-2 self-end">
@@ -202,7 +219,7 @@ const NoteEditor = observer(() => {
             <Textarea
               className="min-h-[calc(100vh-200px)] max-w-full text-base border-0 focus:ring-0"
               placeholder="Start typing your note here..."
-              value={description || undefined}
+              value={selectedNote?.description}
               onChange={(e) => handleChangeDescription(e.target.value)}
             />
           </main>

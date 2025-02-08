@@ -16,10 +16,11 @@ import { observer } from "mobx-react-lite";
 import { useEffect, useState } from "react";
 import ShareNote from "./share-note";
 import { useNavigate } from "react-router-dom";
+import { Note } from "@/swagger/model";
 
 const NotesList = observer(() => {
   const navigate = useNavigate();
-  const [notesInView, setNotesInView] = useState(notesStore.notes);
+  const [notesInView, setNotesInView] = useState<Note[] | []>([]);
 
   const createNewNote = async () => {
     const newNote = await notesStore.addNote("New", null);

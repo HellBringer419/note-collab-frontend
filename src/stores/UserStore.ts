@@ -40,8 +40,8 @@ class UserStore {
         throw new Error(response.statusText);
       }
     } catch (error) {
-      return null;
       console.error("Login failed:", error);
+      return null;
     }
   }
 
