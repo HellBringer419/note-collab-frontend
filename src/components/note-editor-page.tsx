@@ -13,7 +13,7 @@ import {
 import notesStore from "@/stores/NoteStore";
 import { ChevronLeft, Trash2 } from "lucide-react";
 import { observer } from "mobx-react-lite";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import ShareNote from "./share-note";
 import { useNavigate, useParams } from "react-router-dom";
 import userStore from "@/stores/UserStore";
@@ -177,7 +177,7 @@ const NoteEditor = observer(() => {
               <Input
                 className="w-64 ml-4 text-lg md:text-2xl"
                 placeholder="Note title"
-                value={selectedNote?.title}
+                defaultValue={selectedNote?.title || ""}
                 onBlur={(e) => handleChangeTitle(e.target.value)}
               />
             </div>
@@ -219,7 +219,7 @@ const NoteEditor = observer(() => {
             <Textarea
               className="min-h-[calc(100vh-200px)] max-w-full text-base border-0 focus:ring-0"
               placeholder="Start typing your note here..."
-              value={selectedNote?.description}
+              defaultValue={selectedNote?.description ?? ""}
               onChange={(e) => handleChangeDescription(e.target.value)}
             />
           </main>

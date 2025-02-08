@@ -61,7 +61,7 @@ export default function RegisterPage() {
     }
 
     // Registration logic here
-    const user = await userStore.register(email, name, password, "");
+    const user = await userStore.register(email, name, password, null);
     if (user) navigate("/dashboard");
   };
 

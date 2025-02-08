@@ -25,7 +25,7 @@ const NotesList = observer(() => {
   const createNewNote = async () => {
     const newNote = await notesStore.addNote("New", null);
     if (newNote && newNote.id) {
-      navigate(`note/${newNote?.id}`);
+      navigate(`/note/${newNote?.id}`);
     } else {
       navigate("note/0");
     }
@@ -99,7 +99,7 @@ const NotesList = observer(() => {
                   </Avatar>
                 ))}
                 {note.Collaborations?.length &&
-                note.Collaborations?.length > 3 ? (
+                  note.Collaborations?.length > 3 ? (
                   <span className="text-sm text-gray-500">
                     +{note.Collaborations.length - 3} more
                   </span>

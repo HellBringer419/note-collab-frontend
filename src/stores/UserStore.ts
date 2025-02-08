@@ -57,7 +57,7 @@ class UserStore {
     email: string,
     name: string,
     password: string,
-    avatar: string,
+    avatar: string | undefined | null,
   ): Promise<User | null> {
     try {
       const response = await api.registerUser({
@@ -71,6 +71,7 @@ class UserStore {
           throw new Error("Missing data");
         userStore.setUser(response.data.user);
         userStore.setToken(response.data.token);
+        return response.data.user;
       } else {
         throw new Error(response.statusText);
       }
