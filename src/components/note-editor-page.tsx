@@ -1,3 +1,4 @@
+import { io, Socket } from "socket.io-client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,38 +15,90 @@ import { observer } from "mobx-react-lite";
 import { useEffect, useState } from "react";
 import ShareNote from "./share-note";
 import { useNavigate, useParams } from "react-router-dom";
+import userStore from "@/stores/UserStore";
+import { Note } from "@/swagger/model";
 
 const NoteEditor = observer(() => {
   const navigate = useNavigate();
   const params = useParams();
 
   // const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [title, setTitle] = useState(notesStore.selectedNote?.title || "");
+  const [selectedNote, setSelectedNote] = useState<Note | null>(null);
+  const [title, setTitle] = useState(selectedNote?.title || "");
   const [description, setDescription] = useState(
-    notesStore.selectedNote?.description || "",
+    selectedNote?.description || "",
   );
+  const [socket, setSocket] = useState<Socket | null>(null);
+
+  // Initialize WebSocket connection
+  useEffect(() => {
+    const newSocket = io(
+      import.meta.env.REACT_APP_BASE_BACKEND_URL ?? "ws://localhost:8080",
+      {
+        auth: {
+          token: userStore.token, // Use the token from the user store
+        },
+      },
+    );
+
+    newSocket.on("connect", () => {
+      console.log("Connected to WebSocket server");
+    });
+
+    newSocket.on("disconnect", () => {
+      console.log("Disconnected from WebSocket server");
+    });
+
+    newSocket.on("note_update", (data: Note) => {
+      if (data.id === parseInt(params.noteId!)) {
+        if (data.title) setTitle(data.title);
+        if (data.description) setDescription(data.description);
+      }
+    });
+
+    newSocket.on("note_delete", (noteId) => {
+      if (noteId === parseInt(params.noteId!)) {
+        setSelectedNote(null);
+        navigate("/dashboard");
+      }
+    });
+
+    setSocket(newSocket);
+
+    return () => {
+      newSocket.disconnect();
+    };
+  }, [params.noteId, userStore.token, navigate]);
 
   useEffect(() => {
-    if (notesStore.selectedNote?.id)
-      notesStore.updateNote(notesStore.selectedNote?.id, title, description);
+    if (selectedNote?.id)
+      notesStore.updateNote(selectedNote?.id, title, description);
   }, [title, description]);
 
   useEffect(() => {
     if (params.noteId) {
-      notesStore.selectNote(parseInt(params.noteId) ?? null);
-      if (notesStore.selectedNote?.id)
-        notesStore.getNoteDetails(notesStore.selectedNote?.id);
+      const fetchData = async () => {
+        const currentSelectedNote = await notesStore.getNoteDetails(
+          parseInt(params.noteId ?? ""),
+        );
+        setSelectedNote(currentSelectedNote);
+      };
+      if (socket) socket.emit("subscribe-note", parseInt(params.noteId));
+      fetchData();
     }
-  });
+  }, [params.noteId]);
 
   const handleBackButton = () => {
-    notesStore.selectNote(null);
+    setSelectedNote(null);
     navigate("/dashboard");
   };
 
   const handleDelete = async () => {
-    if (notesStore.selectedNote?.id) {
-      await notesStore.removeNote(notesStore.selectedNote?.id);
+    if (selectedNote?.id) {
+      await notesStore.removeNote(selectedNote?.id);
+      if (socket) {
+        socket.emit("note_delete", selectedNote?.id); // Emit delete event to server
+      }
       navigate("/dashboard");
     }
   };
@@ -95,34 +148,32 @@ const NoteEditor = observer(() => {
               />
             </div>
             <div className="flex items-center space-x-2 self-end">
-              {notesStore.selectedNote?.Collaborations?.slice(0, 3).map(
-                (collab) => (
-                  <Avatar
-                    className="h-6 w-6"
-                    key={collab.id}
-                    title={collab.User?.name}
-                  >
-                    <AvatarImage src={collab?.User?.avatar} />
-                    <AvatarFallback>
-                      {collab.User?.name
-                        ?.split(" ")
-                        .map((name) => name.charAt(0))
-                        .join("")
-                        .toUpperCase() ?? "User"}
-                    </AvatarFallback>
-                  </Avatar>
-                ),
-              )}
-              {notesStore.selectedNote?.Collaborations?.length &&
-              notesStore.selectedNote?.Collaborations?.length > 3 ? (
+              {selectedNote?.Collaborations?.slice(0, 3).map((collab) => (
+                <Avatar
+                  className="h-6 w-6"
+                  key={collab.id}
+                  title={collab.User?.name}
+                >
+                  <AvatarImage src={collab?.User?.avatar} />
+                  <AvatarFallback>
+                    {collab.User?.name
+                      ?.split(" ")
+                      .map((name) => name.charAt(0))
+                      .join("")
+                      .toUpperCase() ?? "User"}
+                  </AvatarFallback>
+                </Avatar>
+              ))}
+              {selectedNote?.Collaborations?.length &&
+              selectedNote?.Collaborations?.length > 3 ? (
                 <span className="text-sm text-gray-500">
-                  +{notesStore.selectedNote?.Collaborations.length - 3} more
+                  +{selectedNote?.Collaborations.length - 3} more
                 </span>
               ) : (
                 <></>
               )}
-              {notesStore.selectedNote ? (
-                <ShareNote note={notesStore.selectedNote} />
+              {selectedNote ? (
+                <ShareNote note={selectedNote} />
               ) : (
                 <Button variant="outline" disabled>
                   Invite

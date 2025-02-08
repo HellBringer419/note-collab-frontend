@@ -22,9 +22,8 @@ const NotesList = observer(() => {
   const [notesInView, setNotesInView] = useState(notesStore.notes);
 
   const createNewNote = async () => {
-    const newNote = await notesStore.addNote("", "");
+    const newNote = await notesStore.addNote("New", null);
     if (newNote && newNote.id) {
-      notesStore.selectNote(newNote.id);
       navigate(`note/${newNote?.id}`);
     } else {
       navigate("note/0");

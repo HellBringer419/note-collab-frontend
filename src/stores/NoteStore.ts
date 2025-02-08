@@ -6,7 +6,6 @@ import userStore from "./UserStore";
 const api = getNotesCollaborationAPI();
 class NotesStore {
   notes: Note[] = [];
-  selectedNote: Note | null = null;
 
   constructor() {
     makeAutoObservable(this);
@@ -22,26 +21,20 @@ class NotesStore {
   }
 
   // Action to add a note
-  async addNote(title: string, description: string): Promise<Note | null> {
+  async addNote(
+    title: string,
+    description?: string | null,
+  ): Promise<Note | null> {
     const token = userStore.token;
     const newNote = await api.createNote(
-      { title, description, createdBy: 0 },
+      { title, description },
       { headers: { Authorization: `Bearer ${token}` } },
     );
     if (newNote) {
-      this.selectNote(newNote.data.id);
       this.notes.push(newNote.data);
       return newNote.data;
     }
     return null;
-  }
-
-  // Action to select a note
-  selectNote(noteId: number | null) {
-    this.selectedNote =
-      noteId === null
-        ? null
-        : this.notes.find((note) => note.id === noteId) || null;
   }
 
   async getNoteDetails(noteId: number) {
