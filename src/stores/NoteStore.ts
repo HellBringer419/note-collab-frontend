@@ -44,28 +44,40 @@ class NotesStore {
   }
 
   // Action to remove a note
-  async removeNote(noteId: number) {
-    const token = userStore.token;
+  async removeNote(noteId: number,
+    isMine: boolean = true,
+  ) {
+    if (isMine) {
+      const token = userStore.token;
+
     await api.deleteNote(noteId, {
       headers: { Authorization: `Bearer ${token}` },
     });
+    }
     this.notes = this.notes.filter((note) => note.id !== noteId);
   }
 
-  async updateNote(noteId: number, title: string, description: string) {
+  async updateNote(noteId: number, title: string, description?: string | null, isMine: boolean = true) {
     // should addd debounce
-    const token = userStore.token;
-    const updatedNote = await api.updateNote(
-      noteId,
-      {
-        title,
-        description,
-      },
-      { headers: { Authorization: `Bearer ${token}` } },
-    );
-    if (updatedNote.data) {
-      this.notes[this.notes.findIndex((note) => note.id === noteId)] =
+    if (isMine) {
+      const token = userStore.token;
+      const updatedNote = await api.updateNote(
+        noteId,
+        {
+          title,
+          description,
+        },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      if (updatedNote.data) {
+        this.notes[this.notes.findIndex((note) => note.id === noteId)] =
         updatedNote.data;
+      }
+    } else {
+      this.notes[this.notes.findIndex((note) => note.id === noteId)] = {
+        id: noteId,
+        title, description: description || undefined
+      }
     }
   }
 

@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button"; // Assuming you have the Shadcn Button component set up
-import { Card, CardContent, CardTitle } from "@/components/ui/card"; // For displaying features
 import { useNavigate } from "react-router-dom";
 import ModeToggle from "./mode-toggle";
 

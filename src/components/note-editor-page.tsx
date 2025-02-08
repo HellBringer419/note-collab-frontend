@@ -24,9 +24,9 @@ const NoteEditor = observer(() => {
 
   // const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
-  const [title, setTitle] = useState(selectedNote?.title || "");
+  const [title, setTitle] = useState(selectedNote?.title || "New Note");
   const [description, setDescription] = useState(
-    selectedNote?.description || "",
+    selectedNote?.description || null,
   );
   const [socket, setSocket] = useState<Socket | null>(null);
 
@@ -49,16 +49,27 @@ const NoteEditor = observer(() => {
       console.log("Disconnected from WebSocket server");
     });
 
-    newSocket.on("note_update", (data: Note) => {
+    newSocket.on("note_update", async (data: Note) => {
       if (data.id === parseInt(params.noteId!)) {
-        if (data.title) setTitle(data.title);
-        if (data.description) setDescription(data.description);
+        
+        if (data.title) {
+          setTitle(data.title);
+        }
+        if (data.description) {
+          setDescription(data.description);
+        }
+        
+        if (selectedNote?.id)
+          await notesStore.updateNote(selectedNote?.id, title, description, false);
       }
     });
 
-    newSocket.on("note_delete", (noteId) => {
+    newSocket.on("note_delete", async (noteId) => {
       if (noteId === parseInt(params.noteId!)) {
         setSelectedNote(null);
+        if (selectedNote?.id) {
+          await notesStore.removeNote(selectedNote?.id, false);
+        }
         navigate("/dashboard");
       }
     });
@@ -69,11 +80,6 @@ const NoteEditor = observer(() => {
       newSocket.disconnect();
     };
   }, [params.noteId, userStore.token, navigate]);
-
-  useEffect(() => {
-    if (selectedNote?.id)
-      notesStore.updateNote(selectedNote?.id, title, description);
-  }, [title, description]);
 
   useEffect(() => {
     if (params.noteId) {
@@ -93,9 +99,20 @@ const NoteEditor = observer(() => {
     navigate("/dashboard");
   };
 
+  const handleChangeTitle = (title: string) => {
+    setTitle(title);
+    if (selectedNote?.id)
+      notesStore.updateNote(selectedNote?.id, title, description, true);
+  }
+  const handleChangeDescription = (description: string) => {
+    setDescription(description);
+    if (selectedNote?.id)
+      notesStore.updateNote(selectedNote?.id, title, description, true);
+  }
+
   const handleDelete = async () => {
     if (selectedNote?.id) {
-      await notesStore.removeNote(selectedNote?.id);
+      await notesStore.removeNote(selectedNote?.id, true);
       if (socket) {
         socket.emit("note_delete", selectedNote?.id); // Emit delete event to server
       }
@@ -144,7 +161,7 @@ const NoteEditor = observer(() => {
                 className="w-64 ml-4 text-lg md:text-2xl"
                 placeholder="Note title"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(e) => handleChangeTitle(e.target.value)}
               />
             </div>
             <div className="flex items-center space-x-2 self-end">
@@ -185,8 +202,8 @@ const NoteEditor = observer(() => {
             <Textarea
               className="min-h-[calc(100vh-200px)] max-w-full text-base border-0 focus:ring-0"
               placeholder="Start typing your note here..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              value={description || undefined}
+              onChange={(e) => handleChangeDescription(e.target.value)}
             />
           </main>
         </div>
