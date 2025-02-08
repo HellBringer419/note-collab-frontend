@@ -37,7 +37,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 md:w-screen">
+    <div className="min-h-screen flex flex-col justify-center py-12 px-6 lg:px-8 md:w-screen">
       <div className="sm:mx-auto sm:w-full sm:max-w-md md:max-w-full">
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-gray-100">
           Sign in to your account
@@ -134,45 +134,13 @@ export default function LoginPage() {
                 </div>
                 <small className="text-red-500">{passwordError}</small>
               </div>
-              <div>
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  className="mt-1"
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-                <small className="text-red-500">{passwordError}</small>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <Checkbox id="remember-me" />
-                  <Label htmlFor="remember-me" className="ml-2">
-                    Remember me
-                  </Label>
-                </div>
-
-                <div className="text-sm">
-                  <Button
-                    variant="default"
-                    className="font-medium text-blue-600 hover:text-blue-500"
-                    onClick={() => navigate("/forgot-password")}
-                  >
-                    Forgot your password?
-                  </Button>
-                </div>
-              </div>
 
               <Button type="submit" className="w-full">
                 Sign in
               </Button>
             </form>
           </CardContent>
-          <CardFooter>
+          <CardFooter className="flex items-center justify-between">
             <p className="text-center text-sm text-gray-600 mt-2">
               Don't have an account?{" "}
               <span
@@ -181,6 +149,15 @@ export default function LoginPage() {
               >
                 {" "}
                 Sign up
+              </span>
+            </p>
+            <p className="text-center text-sm text-gray-600 mt-2">
+              <span
+                onClick={() => navigate("/forgot-password")}
+                className="cursor-pointer underline font-medium text-blue-600 hover:text-blue-500"
+              >
+                {" "}
+                Forgot your password?
               </span>
             </p>
           </CardFooter>

@@ -81,7 +81,8 @@ const NotesList = observer(() => {
             </CardHeader>
             <CardContent>
               <p className="text-gray-600 mb-4">
-                {note.description?.substring(0, 15)}...
+                {note.description?.substring(0, 15)}
+                {note.description && note.description?.length > 15 ? "..." : ""}
               </p>
               <div className="flex items-center space-x-2">
                 {note.Collaborations?.slice(0, 3).map((collab) => (
@@ -111,8 +112,11 @@ const NotesList = observer(() => {
               onClick={(e) => e.stopPropagation()}
             >
               <ShareNote note={note} />
-              <span className="text-sm text-gray-500">
-                {dayjs(note.createdAt).fromNow()}
+              <span
+                className="text-sm text-gray-500"
+                title={dayjs(note.updatedAt).format("LLL").toString()}
+              >
+                {dayjs(note.updatedAt).fromNow()}
               </span>
             </CardFooter>
           </Card>

@@ -5,7 +5,7 @@ import ModeToggle from "./mode-toggle";
 const HomePage = () => {
   const navigate = useNavigate();
   return (
-    <div className="text-gray-800">
+    <div className="min-h-screen m-0 flex flex-col justify-center md:w-screen text-gray-800">
       {/* Header/Nav */}
       <header className="py-4">
         <div className="mx-auto flex flex-col md:flex-row justify-between items-center px-6">
@@ -69,7 +69,10 @@ const HomePage = () => {
       </section>
 
       {/* About Section */}
-      <section id="about" className="py-16 bg-gray-100 dark:bg-gray-600 dark:text-gray-100">
+      <section
+        id="about"
+        className="py-16 bg-gray-100 dark:bg-gray-600 dark:text-gray-100"
+      >
         <h2 className="text-3xl font-bold text-center mb-6">About Us</h2>
         <p className="text-lg text-center max-w-3xl mx-auto">
           Our mission is to make collaboration easier. With real-time editing
@@ -79,7 +82,10 @@ const HomePage = () => {
       </section>
 
       {/* Footer Section */}
-      <footer id="contact" className="bg-blue-600 text-white dark:bg-blue-800 dark:text-gray-100 py-8 text-center">
+      <footer
+        id="contact"
+        className="bg-blue-600 text-white dark:bg-blue-800 dark:text-gray-100 py-8 text-center"
+      >
         <p>
           Contact Us:{" "}
           <a href="mailto:contact@collaborativenotes.com" className="underline">
