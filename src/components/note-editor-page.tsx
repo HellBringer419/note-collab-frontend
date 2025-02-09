@@ -60,6 +60,8 @@ const NoteEditor = observer(() => {
     });
 
     newSocket.on("note_update", async (data: Note) => {
+      console.log({ data, selectedNote });
+      
       if (data.id === selectedNote?.id) {
         setSelectedNote(data);
 
@@ -74,6 +76,8 @@ const NoteEditor = observer(() => {
     });
 
     newSocket.on("note_delete", async (noteId) => {
+      console.log(noteId);
+      
       if (noteId === selectedNote?.id) {
         setSelectedNote(null);
         if (selectedNote?.id) {
@@ -84,11 +88,25 @@ const NoteEditor = observer(() => {
     });
 
     setSocket(newSocket);
-
     return () => {
       newSocket.disconnect();
     };
   }, [userStore.token, params]);
+
+  useEffect(() => {
+    handleSubscribe();
+  }, [socket, selectedNote?.id]);
+
+  const handleSubscribe = () => {
+    console.log("Subscribing to note", selectedNote?.id);
+    
+    if (socket) socket.emit("subscribe-note", selectedNote?.id, (status: any, error: any) => {
+      if (error) {
+        console.error(error);
+      }
+      console.log(status);        
+    });
+  };
 
   const handleBackButton = () => {
     setSelectedNote(null);
@@ -121,7 +139,7 @@ const NoteEditor = observer(() => {
       setSelectedNote({ ...selectedNote, description });
       debounceChangeDescription(
         selectedNote.id,
-        selectedNote.title,
+        selectedNote.title!,
         description,
       );
     }
