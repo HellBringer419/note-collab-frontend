@@ -10,7 +10,6 @@ import type { AxiosRequestConfig, AxiosResponse } from "axios";
 import type {
   Collaboration,
   CreateNoteRequest,
-  InviteCollaborator200,
   InviteCollaboratorBody,
   LoginRequest,
   LoginUser200,
@@ -132,7 +131,7 @@ export const getNotesCollaborationAPI = () => {
   /**
    * @summary Invite a user to collaborate on a note.
    */
-  const inviteCollaborator = <TData = AxiosResponse<InviteCollaborator200>>(
+  const inviteCollaborator = <TData = AxiosResponse<Collaboration[]>>(
     inviteCollaboratorBody: InviteCollaboratorBody,
     options?: AxiosRequestConfig,
   ): Promise<TData> => {
@@ -163,4 +162,4 @@ export type GetNoteResult = AxiosResponse<Note>;
 export type UpdateNoteResult = AxiosResponse<Note>;
 export type DeleteNoteResult = AxiosResponse<void>;
 export type GetCollaboratorsResult = AxiosResponse<Collaboration[]>;
-export type InviteCollaboratorResult = AxiosResponse<InviteCollaborator200>;
+export type InviteCollaboratorResult = AxiosResponse<Collaboration[]>;

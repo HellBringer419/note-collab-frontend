@@ -10,5 +10,7 @@ export interface UpdateNoteRequest {
   /** @minLength 3 */
   title: string;
   /** @nullable */
+  category?: string | null;
+  /** @nullable */
   description?: string | null;
 }

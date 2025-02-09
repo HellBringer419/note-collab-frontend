@@ -11,6 +11,7 @@ import type { Collaboration } from "./collaboration";
 export interface Note {
   id: number;
   title?: string;
+  category?: string;
   description?: string;
   createdBy?: number;
   createdAt?: string;

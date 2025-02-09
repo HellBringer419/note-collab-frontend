@@ -80,17 +80,17 @@ const NoteEditor = observer(() => {
 
     newSocket.on("note_update", async (data: Note) => {
       console.log({ data, selectedNote });
-
       if (data.id === selectedNote?.id) {
-        setSelectedNote(data);
-
-        if (selectedNote?.id)
-          await notesStore.updateNote(
-            selectedNote?.id,
-            selectedNote.title ?? "New",
-            selectedNote.description,
+        setSelectedNote((prevNote) => {
+          const updatedNote = { ...prevNote, ...data };
+          notesStore.updateNote(
+            updatedNote.id,
+            updatedNote.title ?? "New",
+            updatedNote.description,
             false,
           );
+          return updatedNote;
+        });
       }
     });
 
@@ -114,6 +114,11 @@ const NoteEditor = observer(() => {
 
   useEffect(() => {
     handleSubscribe();
+    return () => {
+      if (socket) {
+        socket.emit("unsubscribe-note", selectedNote?.id);
+      }
+    }
   }, [socket, selectedNote?.id]);
 
   const handleSubscribe = () => {
