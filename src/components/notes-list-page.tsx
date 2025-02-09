@@ -19,6 +19,7 @@ import { useNavigate } from "react-router-dom";
 import { Note } from "@/swagger/model";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "./ui/toaster";
+import ModeToggle from "./mode-toggle";
 
 const NotesList = observer(() => {
   const navigate = useNavigate();
@@ -30,20 +31,20 @@ const NotesList = observer(() => {
       const newNote = await notesStore.addNote("New", null);
       if (newNote && newNote.id) {
         toast({
-          title: 'New Note Created',
+          title: "New Note Created",
           variant: "default",
-        })
+        });
         navigate(`/note/${newNote?.id}`);
       } else {
         toast({
-          title: 'Failed to create note',
+          title: "Failed to create note",
           variant: "destructive",
-        })
+        });
       }
     } catch (error) {
       if (error instanceof Error) {
         toast({
-          title: 'Failed to create note',
+          title: "Failed to create note",
           description: error.message,
           variant: "destructive",
         });
@@ -52,15 +53,20 @@ const NotesList = observer(() => {
   };
 
   useEffect(() => {
+    const refresh = async () => {
+      await notesStore.refreshNotes();
+    };
     try {
-      notesStore.refreshNotes();
+      if (userStore.token) refresh();
+      else navigate("/");
     } catch (error) {
       if (error instanceof Error) {
         toast({
-          title: 'Failed to refresh notes',
+          title: "Failed to refresh notes",
           description: error.message,
           variant: "destructive",
-        })
+        });
+        navigate("/");
       }
     }
   }, [userStore.token]);
@@ -86,9 +92,22 @@ const NotesList = observer(() => {
   return (
     <div className="min-h-screen flex flex-col justify-center py-12 px-6 lg:px-12 md:w-screen">
       <Toaster />
-      <h1 className="text-3xl font-bold mb-6 text-center">
+      <h1 className="text-3xl font-bold mb-6 mt-2 text-center">
         Collaborative Notes
       </h1>
+      <div className="absolute top-6 right-6 flex flex-row">
+        <ModeToggle />
+        <Button
+          variant="outline"
+          className="ml-2"
+          onClick={() => {
+            userStore.logout(); // Trigger logout
+            navigate("/");
+          }}
+        >
+          Logout
+        </Button>
+      </div>
       <div className="flex mb-6">
         <Input
           className="mr-2"
@@ -130,7 +149,7 @@ const NotesList = observer(() => {
                   </Avatar>
                 ))}
                 {note.Collaborations?.length &&
-                  note.Collaborations?.length > 3 ? (
+                note.Collaborations?.length > 3 ? (
                   <span className="text-sm text-gray-500">
                     +{note.Collaborations.length - 3} more
                   </span>

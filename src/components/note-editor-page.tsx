@@ -11,7 +11,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import notesStore from "@/stores/NoteStore";
-import { ChevronLeft, Trash2 } from "lucide-react";
+import { ChevronLeft, LogOut, Trash2 } from "lucide-react";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useState } from "react";
 import ShareNote from "./share-note";
@@ -20,6 +20,7 @@ import userStore from "@/stores/UserStore";
 import { Note } from "@/swagger/model";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "./ui/toaster";
+import ModeToggle from "./mode-toggle";
 
 const NoteEditor = observer(() => {
   const navigate = useNavigate();
@@ -260,6 +261,17 @@ const NoteEditor = observer(() => {
                   Invite
                 </Button>
               )}
+              <ModeToggle />
+              <Button
+                variant="outline"
+                onClick={() => {
+                  userStore.logout();
+                  navigate("/"); // Redirect to login page
+                }}
+              >
+                <LogOut />
+                Logout
+              </Button>
             </div>
           </header>
           <main className="bg-secondary/90 flex-1 p-6">
