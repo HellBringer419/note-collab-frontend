@@ -1,5 +1,6 @@
 import { getNotesCollaborationAPI } from "@/swagger/apis/notesCollaborationAPI";
 import { User } from "@/swagger/model";
+import { AxiosError } from "axios";
 import { makeAutoObservable } from "mobx";
 
 const api = getNotesCollaborationAPI();
@@ -26,13 +27,12 @@ class UserStore {
   }
 
   // Login: Simulate login API call and update the store
-  async login(username: string, password: string): Promise<User | null> {
+  async login(username: string, password: string): Promise<User> {
     try {
-      // Simulate an API call here (replace with your actual login API)
       const response = await api.loginUser({ email: username, password }); // Replace with your actual API
       if (response.data && response.status >= 200 && response.status < 400) {
         if (!response.data.user || !response.data.token)
-          throw new Error("Missing data");
+          return new Error("Missing data");
         this.setUser(response.data.user);
         this.setToken(response.data.token);
         return response.data.user;
@@ -41,7 +41,23 @@ class UserStore {
       }
     } catch (error) {
       console.error("Login failed:", error);
-      return null;
+      if (error instanceof AxiosError) {
+        switch (error.status) {
+          case 200:
+            break;
+          case 400:
+            throw new Error(error.response?.data.message ?? "Login failed");
+          case 401:
+            throw new Error("Invalid credentials");
+          case 403:
+            throw new Error("Access denied");
+          case 404:
+            throw new Error("User not found");
+          default:
+            throw new Error("Server error");
+        }
+      }
+      throw new Error("Unknown Error");
     }
   }
 
@@ -58,7 +74,7 @@ class UserStore {
     name: string,
     password: string,
     avatar: string | undefined | null,
-  ): Promise<User | null> {
+  ): Promise<User> {
     try {
       const response = await api.registerUser({
         email,
@@ -76,9 +92,24 @@ class UserStore {
         throw new Error(response.statusText);
       }
     } catch (error) {
-      console.error("Register failed:", error);
+      if (error instanceof AxiosError) {
+        switch (error.status) {
+          case 200:
+            break;
+          case 400:
+            throw new Error(error.response?.data.message ?? "Registration failed");
+          case 401:
+            throw new Error("Invalid credentials");
+          case 403:
+            throw new Error("Access denied");
+          case 404:
+            throw new Error("User not found");
+          default:
+            throw new Error("Server error");
+        }
+      }
+      throw new Error("Unknown Error");
     }
-    return null;
   }
 
   // Forgot Password: Simulate forgot password API call
@@ -93,6 +124,24 @@ class UserStore {
       }
     } catch (error) {
       console.error("Forgot password failed:", error);
+      if (error instanceof AxiosError) {
+        switch (error.status) {
+          case 200:
+            break;
+          case 400:
+            throw new Error(error.response?.data.message ?? "Password reset failed");
+          case 401:
+            throw new Error("Invalid credentials");
+          case 403:
+            throw new Error("Access denied");
+          case 404:
+            throw new Error("User not found");
+          default:
+            throw new Error("Server error");
+  
+        }
+      }
+      throw new Error("Unknown Error");
     }
   }
 }

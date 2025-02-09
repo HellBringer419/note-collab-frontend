@@ -17,22 +17,51 @@ import { useEffect, useState } from "react";
 import ShareNote from "./share-note";
 import { useNavigate } from "react-router-dom";
 import { Note } from "@/swagger/model";
+import { useToast } from "@/hooks/use-toast";
 
 const NotesList = observer(() => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [notesInView, setNotesInView] = useState<Note[] | []>([]);
 
   const createNewNote = async () => {
-    const newNote = await notesStore.addNote("New", null);
-    if (newNote && newNote.id) {
-      navigate(`/note/${newNote?.id}`);
-    } else {
-      navigate("note/0");
+    try {
+      const newNote = await notesStore.addNote("New", null);
+      if (newNote && newNote.id) {
+        toast({
+          title: 'New Note Created',
+          variant: "default",
+        })
+        navigate(`/note/${newNote?.id}`);
+      } else {
+        toast({
+          title: 'Failed to create note',
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        toast({
+          title: 'Failed to create note',
+          description: error.message,
+          variant: "destructive",
+        });
+      }
     }
   };
 
   useEffect(() => {
-    notesStore.refreshNotes();
+    try {
+      notesStore.refreshNotes();
+    } catch (error) {
+      if (error instanceof Error) {
+        toast({
+          title: 'Failed to refresh notes',
+          description: error.message,
+          variant: "destructive",
+        })
+      }
+    }
   }, [userStore.token]);
 
   useEffect(() => {

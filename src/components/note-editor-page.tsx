@@ -18,23 +18,37 @@ import ShareNote from "./share-note";
 import { useNavigate, useParams } from "react-router-dom";
 import userStore from "@/stores/UserStore";
 import { Note } from "@/swagger/model";
+import { useToast } from "@/hooks/use-toast";
 
 const NoteEditor = observer(() => {
   const navigate = useNavigate();
   const params = useParams();
+  const { toast } = useToast();  
 
   // const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
+  const [collabs, setCollabs] = useState<[]>([]);
   const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
     if (params.noteId) {
       const fetchData = async () => {
-        const currentSelectedNote = await notesStore.getNoteDetails(
-          parseInt(params.noteId ?? ""),
-        );
-        setSelectedNote(currentSelectedNote);
-      };
+        try {
+
+          const currentSelectedNote = await notesStore.getNoteDetails(
+            parseInt(params.noteId ?? ""),
+          );
+          setSelectedNote(currentSelectedNote);
+        } catch (error) {
+          if (error instanceof Error) {
+            toast({ 
+              title: 'Failed to fetch note',
+              description: error.message,
+              variant: 'destructive',
+            });
+          }
+        }
+      } 
       if (socket) socket.emit("subscribe-note", parseInt(params.noteId));
       fetchData();
     }

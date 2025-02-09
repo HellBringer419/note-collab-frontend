@@ -18,14 +18,19 @@ interface ShareNoteProps {
 const ShareNote = ({ note }: ShareNoteProps) => {
   const [collaborators, setCollaborators] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [apiError, setApiError] = useState("");
   const handleShare = async (e: FormEvent) => {
     e.preventDefault();
     // Here you would implement the logic to share the note
     console.log("Sharing note", note.id, " with:", collaborators);
-    await notesStore.shareNote(note.id, collaborators);
-    setIsDialogOpen(false);
+    try { 
+      await notesStore.shareNote(note.id, collaborators);
+      setIsDialogOpen(false);
+    } catch (error) {
+      setApiError(error instanceof Error ? error.message : "Failed to share note");
+    }
   };
-  return (
+  return (  
     <>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogTrigger asChild>
@@ -44,7 +49,7 @@ const ShareNote = ({ note }: ShareNoteProps) => {
               value={collaborators}
               onChange={(e) => setCollaborators(e.target.value)}
             />
-
+            <span className="text-red-500">{apiError}</span>
             <Button type="submit"> Send Invites </Button>
           </form>
         </DialogContent>

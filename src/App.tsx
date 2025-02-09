@@ -10,6 +10,7 @@ import RegisterPage from "./components/register-page";
 import HomePage from "./components/home-page";
 import NotesList from "./components/notes-list-page";
 import NoteEditor from "./components/note-editor-page";
+import { Toast } from "@radix-ui/react-toast";
 
 axios.defaults.baseURL =
   import.meta.env.REACT_APP_BASE_BACKEND_URL ?? "http://localhost:8080/api/v1/";
@@ -29,6 +30,7 @@ const App = () => {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/dashboard" element={<NotesList />} />
             <Route path="/note/:noteId" element={<NoteEditor />} />
+            <Toast />
           </Routes>
         </ThemeProvider>
       </Router>

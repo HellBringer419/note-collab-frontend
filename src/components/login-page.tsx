@@ -21,6 +21,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [emailError, _setEmailError] = useState("");
   const [passwordError, _setPasswordError] = useState("");
+  const [apiError, setApiError] = useState("");
 
   const navigate = useNavigate();
 
@@ -31,8 +32,15 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     // Login logic here
-    const user = await userStore.login(email, password);
-    if (user) navigate("/dashboard");
+    try {
+      const user = await userStore.login(email, password);
+      if (user) navigate("/dashboard");
+    } catch (error) {
+      if (error instanceof Error) {
+        setApiError(error.message);
+        setTimeout(() => setApiError(""), 2000);
+      }
+    }
   };
 
   return (
@@ -134,6 +142,7 @@ export default function LoginPage() {
                 <small className="text-red-500">{passwordError}</small>
               </div>
 
+              <small className="text-red-500">{apiError}</small>
               <Button type="submit" className="w-full">
                 Sign in
               </Button>

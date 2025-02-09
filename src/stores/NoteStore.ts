@@ -1,7 +1,8 @@
 import { getNotesCollaborationAPI } from "@/swagger/apis/notesCollaborationAPI";
-import { Note } from "@/swagger/model";
+import { GetCollaborators200Item, InviteCollaborator200, Note } from "@/swagger/model";
 import { makeAutoObservable, runInAction } from "mobx";
 import userStore from "./UserStore";
+import { AxiosError } from "axios";
 
 const api = getNotesCollaborationAPI();
 class NotesStore {
@@ -13,6 +14,7 @@ class NotesStore {
 
   async refreshNotes(): Promise<Note[]> {
     const token = userStore.token;
+    try {
     const response = await api.getNotes({
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -20,41 +22,100 @@ class NotesStore {
       this.notes = response.data;
     });
     return response.data;
+    } catch (error) {
+    if (error instanceof AxiosError) {
+      switch (error.status) {
+        case 200:
+          break;
+        case 400:
+          throw new Error(error.response?.data.message ?? "Note creation failed");
+        case 401:
+          throw new Error("Invalid credentials");
+        case 403:
+          throw new Error("Access denied");
+        case 404:
+          throw new Error("User not found");
+        default:
+          throw new Error("Server error");
+      }
+    }
+    throw new Error("Unknown Error");
+  }
   }
 
   // Action to add a note
   async addNote(
     title: string,
     description?: string | null,
-  ): Promise<Note | null> {
+  ): Promise<Note> {
     const token = userStore.token;
-    const newNote = await api.createNote(
-      { title, description },
-      { headers: { Authorization: `Bearer ${token}` } },
-    );
-    if (newNote) {
-      runInAction(() => {
-        this.notes.push(newNote.data);
-      });
-      return newNote.data;
+    try {
+      const newNote = await api.createNote(
+        { title, description },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      if (newNote) {
+        runInAction(() => {
+          this.notes.push(newNote.data);
+        });
+        return newNote.data;
+      }
+      throw new Error("Failed to create note");
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        switch (error.status) {
+          case 200:
+            break;
+          case 400:
+            throw new Error(error.response?.data.message ?? "Note creation failed");
+          case 401:
+            throw new Error("Invalid credentials");
+          case 403:
+            throw new Error("Access denied");
+          case 404:
+            throw new Error("User not found");
+          default:
+            throw new Error("Server error");
+        }
+      }
+      throw new Error("Unknown Error");
     }
-    return null;
   }
 
-  async getNoteDetails(noteId: number): Promise<Note | null> {
+  async getNoteDetails(noteId: number): Promise<Note> {
     const token = userStore.token;
-    const noteResponse = await api.getNote(noteId, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    if (noteResponse.data) {
-      runInAction(() => {
-        const idx = this.notes.findIndex((note) => note.id);
-        this.notes[idx] = noteResponse.data;
+    try {
+      const noteResponse = await api.getNote(noteId, {
+        headers: { Authorization: `Bearer ${token}` },
       });
-      return noteResponse.data;
+  
+      if (noteResponse.data) {
+        runInAction(() => {
+          const idx = this.notes.findIndex((note) => note.id);
+          this.notes[idx] = noteResponse.data;
+        });
+        return noteResponse.data;
+      }
+      throw new Error("Failed to get note");
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        switch (error.status) {
+          case 200:
+            break;
+          case 400:
+            throw new Error(error.response?.data.message ?? "Could not get note");
+          case 401:
+            throw new Error("Invalid credentials");
+          case 403:
+            throw new Error("Access denied");
+          case 404:
+            throw new Error("User not found");
+          default:
+            throw new Error("Server error");
+        }
+      }
+      throw new Error("Unknown Error");
     }
-    return null;
   }
 
   // Action to remove a note
@@ -62,12 +123,33 @@ class NotesStore {
     if (isMine) {
       const token = userStore.token;
 
-      await api.deleteNote(noteId, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      runInAction(() => {
-        this.notes = this.notes.filter((note) => note.id !== noteId);
-      });
+      try {
+        await api.deleteNote(noteId, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        runInAction(() => {
+          this.notes = this.notes.filter((note) => note.id !== noteId);
+        });  
+      } catch (error) {
+        if (error instanceof AxiosError) {
+          switch (error.status) {
+            case 200:
+              break;
+            case 400:
+              throw new Error(error.response?.data.message ?? "Note deletion failed");
+            case 401:
+              throw new Error("Invalid credentials");
+            case 403:
+              throw new Error("Access denied");
+            case 404:
+              throw new Error("User not found");
+            default:
+              throw new Error("Server error");
+          }
+        }
+        throw new Error("Unknown Error");
+      }
+      
     } else {
       this.notes = this.notes.filter((note) => note.id !== noteId);
     }
@@ -82,7 +164,8 @@ class NotesStore {
     // should addd debounce
     if (isMine) {
       const token = userStore.token;
-      const updatedNote = await api.updateNote(
+      try { 
+        const updatedNote = await api.updateNote(
         noteId,
         {
           title,
@@ -96,6 +179,25 @@ class NotesStore {
             updatedNote.data;
         });
       }
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        switch (error.status) {
+          case 200:
+            break;
+          case 400:
+            throw new Error(error.response?.data.message ?? "Note update failed");
+          case 401:
+            throw new Error("Invalid credentials");
+          case 403:
+            throw new Error("Access denied");
+          case 404:
+            throw new Error("User not found");
+          default:
+            throw new Error("Server error");
+        }
+      }
+      throw new Error("Unknown Error");
+    }
     } else {
       this.notes[this.notes.findIndex((note) => note.id === noteId)] = {
         id: noteId,
@@ -106,8 +208,10 @@ class NotesStore {
   }
 
   // Action to share a Note
-  async shareNote(noteId: number, collaborator: string) {
+  async shareNote(noteId: number, collaborator: string): Promise<InviteCollaborator200> {
     const token = userStore.token;
+    try {
+
     const response = await api.inviteCollaborator(
       {
         noteId,
@@ -118,17 +222,57 @@ class NotesStore {
       },
     );
     if (response && response.status === 200) return response.data;
-    else return null;
+    else throw new Error("Note sharing failed");
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      switch (error.status) {
+        case 200:
+          break;
+        case 400:
+          throw new Error(error.response?.data.message ?? "Note sharing failed");
+        case 401:
+          throw new Error("Invalid credentials");
+        case 403:
+          throw new Error("Access denied");
+        case 404:
+          throw new Error("User not found");
+        default:
+          throw new Error("Server error");
+      }
+    }
+    throw new Error("Unknown Error");
+  }
   }
 
   // Action to get collaborators for a Note
-  async getCollaborators(noteId: number) {
+  async getCollaborators(noteId: number): Promise<GetCollaborators200Item[]> {
     const token = userStore.token;
+    try {
+      
     const response = await api.getCollaborators(noteId, {
       headers: { Authorization: `Bearer ${token}` },
     });
     if (response && response.status === 200) return response.data;
-    else return null;
+    else throw new Error("Could not get collaborators");
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      switch (error.status) {
+        case 200:
+          break;
+        case 400:
+          throw new Error(error.response?.data.message ?? "Could not get collaborators");
+        case 401:
+          throw new Error("Invalid credentials");
+        case 403:
+          throw new Error("Access denied");
+        case 404:
+          throw new Error("User not found");
+        default:
+          throw new Error("Server error");
+      }
+    }
+    throw new Error("Unknown Error");
+  }
   }
 }
 
