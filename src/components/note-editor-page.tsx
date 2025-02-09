@@ -19,6 +19,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import userStore from "@/stores/UserStore";
 import { Note } from "@/swagger/model";
 import { useToast } from "@/hooks/use-toast";
+import { Toaster } from "./ui/toaster";
 
 const NoteEditor = observer(() => {
   const navigate = useNavigate();
@@ -174,6 +175,7 @@ const NoteEditor = observer(() => {
 
   return (
     <TooltipProvider>
+      <Toaster />
       <div className="min-h-screen flex flex-col justify-center py-12 px-6 lg:px-12 md:w-screen">
         {/* Collapsible Sidebar */}
         {/* <div */}

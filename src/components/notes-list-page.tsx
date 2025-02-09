@@ -18,6 +18,7 @@ import ShareNote from "./share-note";
 import { useNavigate } from "react-router-dom";
 import { Note } from "@/swagger/model";
 import { useToast } from "@/hooks/use-toast";
+import { Toaster } from "./ui/toaster";
 
 const NotesList = observer(() => {
   const navigate = useNavigate();
@@ -84,6 +85,7 @@ const NotesList = observer(() => {
 
   return (
     <div className="min-h-screen flex flex-col justify-center py-12 px-6 lg:px-12 md:w-screen">
+      <Toaster />
       <h1 className="text-3xl font-bold mb-6 text-center">
         Collaborative Notes
       </h1>

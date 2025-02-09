@@ -10,10 +10,9 @@ import RegisterPage from "./components/register-page";
 import HomePage from "./components/home-page";
 import NotesList from "./components/notes-list-page";
 import NoteEditor from "./components/note-editor-page";
-import { Toast } from "@radix-ui/react-toast";
 
 axios.defaults.baseURL =
-  import.meta.env.VITE_REACT_APP_BASE_BACKEND_URL ?? "http://localhost:8080/api/v1/";
+  (import.meta.env.VITE_REACT_APP_BASE_BACKEND_URL + "api/v1") ?? "http://localhost:8080/api/v1/";
 
 dayjs.extend(relativeTimePlugin);
 dayjs.extend(localizedFormat);
@@ -30,7 +29,6 @@ const App = () => {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/dashboard" element={<NotesList />} />
             <Route path="/note/:noteId" element={<NoteEditor />} />
-            <Toast />
           </Routes>
         </ThemeProvider>
       </Router>
