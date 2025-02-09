@@ -13,7 +13,7 @@ import NoteEditor from "./components/note-editor-page";
 import { Toast } from "@radix-ui/react-toast";
 
 axios.defaults.baseURL =
-  import.meta.env.REACT_APP_BASE_BACKEND_URL ?? "http://localhost:8080/api/v1/";
+  import.meta.env.VITE_REACT_APP_BASE_BACKEND_URL ?? "http://localhost:8080/api/v1/";
 
 dayjs.extend(relativeTimePlugin);
 dayjs.extend(localizedFormat);

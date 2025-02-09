@@ -27,18 +27,21 @@ const NoteEditor = observer(() => {
 
   // const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
-  const [collabs, setCollabs] = useState<[]>([]);
+  const [collabs, setCollabs] = useState<any[]>([]);
   const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
     if (params.noteId) {
       const fetchData = async () => {
         try {
-
           const currentSelectedNote = await notesStore.getNoteDetails(
             parseInt(params.noteId ?? ""),
           );
           setSelectedNote(currentSelectedNote);
+          const collaborators = await notesStore.getCollaborators(
+            currentSelectedNote.id
+          )
+          setCollabs(collaborators);
         } catch (error) {
           if (error instanceof Error) {
             toast({ 
@@ -57,7 +60,7 @@ const NoteEditor = observer(() => {
   // Initialize WebSocket connection
   useEffect(() => {
     const newSocket = io(
-      import.meta.env.REACT_APP_BASE_BACKEND_URL ?? "ws://localhost:8080",
+      import.meta.env.VITE_REACT_APP_BASE_BACKEND_URL ?? "ws://localhost:8080",
       {
         auth: {
           token: userStore.token, // Use the token from the user store
@@ -214,7 +217,7 @@ const NoteEditor = observer(() => {
               />
             </div>
             <div className="flex items-center space-x-2 self-end">
-              {selectedNote?.Collaborations?.slice(0, 3).map((collab) => (
+              {collabs.slice(0, 3).map((collab) => (
                 <Avatar
                   className="h-6 w-6"
                   key={collab.id}
@@ -224,16 +227,16 @@ const NoteEditor = observer(() => {
                   <AvatarFallback>
                     {collab.User?.name
                       ?.split(" ")
-                      .map((name) => name.charAt(0))
+                      .map((name: any) => name.charAt(0))
                       .join("")
                       .toUpperCase() ?? "User"}
                   </AvatarFallback>
                 </Avatar>
               ))}
-              {selectedNote?.Collaborations?.length &&
-              selectedNote?.Collaborations?.length > 3 ? (
+              {collabs.length &&
+              collabs.length > 3 ? (
                 <span className="text-sm text-gray-500">
-                  +{selectedNote?.Collaborations.length - 3} more
+                  +{collabs.length - 3} more
                 </span>
               ) : (
                 <></>
