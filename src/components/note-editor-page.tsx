@@ -82,16 +82,15 @@ const NoteEditor = observer(() => {
     newSocket.on("note_update", async (data: Note) => {
       console.log({ data, selectedNote });
       if (data.id === selectedNote?.id) {
-        setSelectedNote((prevNote) => {
-          const updatedNote = { ...prevNote, ...data };
+        setSelectedNote(() => {
           notesStore.updateNote(
-            updatedNote.id,
-            updatedNote.title ?? "New",
-            updatedNote.description,
-            updatedNote.category,
+            data.id,
+            data.title ?? "New",
+            data.description,
+            data.category,
             false,
           );
-          return updatedNote;
+          return data;
         });
       }
     });
