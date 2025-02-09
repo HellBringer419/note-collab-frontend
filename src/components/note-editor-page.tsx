@@ -80,9 +80,8 @@ const NoteEditor = observer(() => {
     });
 
     newSocket.on("note_update", async (data: Note) => {
-      console.log({ data, selectedNote });
-      if (data.id === selectedNote?.id) {
-        setSelectedNote(() => {
+      setSelectedNote((oldNote) => {
+        if (oldNote?.id === data.id) {
           notesStore.updateNote(
             data.id,
             data.title ?? "New",
@@ -91,20 +90,25 @@ const NoteEditor = observer(() => {
             false,
           );
           return data;
-        });
-      }
+        }
+        return oldNote;
+      });
     });
 
     newSocket.on("note_delete", async (noteId) => {
-      console.log(noteId);
-
-      if (noteId === selectedNote?.id) {
-        setSelectedNote(null);
-        if (selectedNote?.id) {
-          await notesStore.removeNote(selectedNote?.id, false);
+      const deleNote = async (currentNoteId: number) => {
+        await notesStore.removeNote(currentNoteId, false);
+      };
+      setSelectedNote((oldNote) => {
+        if (noteId === oldNote?.id) {
+          if (oldNote?.id) {
+            deleNote(oldNote?.id);
+          }
+          navigate("/dashboard");
+          return null;
         }
-        navigate("/dashboard");
-      }
+        return oldNote;
+      });
     });
 
     setSocket(newSocket);
@@ -119,7 +123,7 @@ const NoteEditor = observer(() => {
       if (socket) {
         socket.emit("unsubscribe-note", selectedNote?.id);
       }
-    }
+    };
   }, [socket, selectedNote?.id]);
 
   const handleSubscribe = () => {
@@ -145,7 +149,12 @@ const NoteEditor = observer(() => {
 
   const debounceChangeDescription = useCallback(
     debounce(
-      async (id: number, title: string, description: string, category?: string) => {
+      async (
+        id: number,
+        title: string,
+        description: string,
+        category?: string,
+      ) => {
         await notesStore.updateNote(id, title, description, category, true);
       },
       2_000,
@@ -183,7 +192,7 @@ const NoteEditor = observer(() => {
         selectedNote.id,
         selectedNote.title!,
         description,
-        selectedNote.category
+        selectedNote.category,
       );
     }
   };
@@ -248,9 +257,8 @@ const NoteEditor = observer(() => {
                 defaultValue={selectedNote?.title ?? ""}
                 onBlur={(e) => handleChangeTitle(e.target.value)}
               />
-
             </div>
-              <div className="items-center ml-0 mx-2 hidden md:flex">
+            <div className="items-center ml-0 mx-2 hidden md:flex">
               <Label htmlFor="category">Category</Label>
               <Input
                 className="w-64 ml-4 text-sm md:text-md"
@@ -258,8 +266,8 @@ const NoteEditor = observer(() => {
                 placeholder="Note title"
                 defaultValue={selectedNote?.category ?? ""}
                 onBlur={(e) => handleChangeCategory(e.target.value)}
-                />
-                </div>
+              />
+            </div>
             <div className="flex items-center space-x-2 self-end">
               {collabs.slice(0, 3).map((collab) => (
                 <Avatar
@@ -285,10 +293,7 @@ const NoteEditor = observer(() => {
               ) : (
                 <></>
               )}
-              <Avatar
-                className="h-6 w-6"
-                title="This is You"
-              >
+              <Avatar className="h-6 w-6" title="This is You">
                 <AvatarImage src={userStore.user?.avatar} />
                 <AvatarFallback>
                   {userStore.user?.name
@@ -339,7 +344,7 @@ const NoteEditor = observer(() => {
               size="icon"
               onClick={handleDelete}
             >
-              <Trash2  className="h-6 w-6" />
+              <Trash2 className="h-6 w-6" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>
