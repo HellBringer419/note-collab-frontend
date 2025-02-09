@@ -24,7 +24,7 @@ import { Toaster } from "./ui/toaster";
 const NoteEditor = observer(() => {
   const navigate = useNavigate();
   const params = useParams();
-  const { toast } = useToast();  
+  const { toast } = useToast();
 
   // const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
@@ -40,19 +40,19 @@ const NoteEditor = observer(() => {
           );
           setSelectedNote(currentSelectedNote);
           const collaborators = await notesStore.getCollaborators(
-            currentSelectedNote.id
-          )
+            currentSelectedNote.id,
+          );
           setCollabs(collaborators);
         } catch (error) {
           if (error instanceof Error) {
-            toast({ 
-              title: 'Failed to fetch note',
+            toast({
+              title: "Failed to fetch note",
               description: error.message,
-              variant: 'destructive',
+              variant: "destructive",
             });
           }
         }
-      } 
+      };
       if (socket) socket.emit("subscribe-note", parseInt(params.noteId));
       fetchData();
     }
@@ -79,7 +79,7 @@ const NoteEditor = observer(() => {
 
     newSocket.on("note_update", async (data: Note) => {
       console.log({ data, selectedNote });
-      
+
       if (data.id === selectedNote?.id) {
         setSelectedNote(data);
 
@@ -95,7 +95,7 @@ const NoteEditor = observer(() => {
 
     newSocket.on("note_delete", async (noteId) => {
       console.log(noteId);
-      
+
       if (noteId === selectedNote?.id) {
         setSelectedNote(null);
         if (selectedNote?.id) {
@@ -117,13 +117,18 @@ const NoteEditor = observer(() => {
 
   const handleSubscribe = () => {
     console.log("Subscribing to note", selectedNote?.id);
-    
-    if (socket) socket.emit("subscribe-note", selectedNote?.id, (status: any, error: any) => {
-      if (error) {
-        console.error(error);
-      }
-      console.log(status);        
-    });
+
+    if (socket)
+      socket.emit(
+        "subscribe-note",
+        selectedNote?.id,
+        (status: any, error: any) => {
+          if (error) {
+            console.error(error);
+          }
+          console.log(status);
+        },
+      );
   };
 
   const handleBackButton = () => {
@@ -165,11 +170,17 @@ const NoteEditor = observer(() => {
 
   const handleDelete = async () => {
     if (selectedNote?.id) {
-      await notesStore.removeNote(selectedNote?.id, true);
-      if (socket) {
-        socket.emit("note_delete", selectedNote?.id); // Emit delete event to server
+      try {
+        await notesStore.removeNote(selectedNote?.id, true);
+        navigate("/dashboard");
+      } catch (error) {
+        if (error instanceof Error)
+          toast({
+            title: "Failed to fetch note",
+            description: error.message,
+            variant: "destructive",
+          });
       }
-      navigate("/dashboard");
     }
   };
 
@@ -214,7 +225,7 @@ const NoteEditor = observer(() => {
               <Input
                 className="w-64 ml-4 text-lg md:text-2xl"
                 placeholder="Note title"
-                defaultValue={selectedNote?.title || ""}
+                defaultValue={selectedNote?.title ?? ""}
                 onBlur={(e) => handleChangeTitle(e.target.value)}
               />
             </div>
@@ -235,8 +246,7 @@ const NoteEditor = observer(() => {
                   </AvatarFallback>
                 </Avatar>
               ))}
-              {collabs.length &&
-              collabs.length > 3 ? (
+              {collabs.length && collabs.length > 3 ? (
                 <span className="text-sm text-gray-500">
                   +{collabs.length - 3} more
                 </span>
