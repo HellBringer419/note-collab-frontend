@@ -23,14 +23,16 @@ const ShareNote = ({ note }: ShareNoteProps) => {
     e.preventDefault();
     // Here you would implement the logic to share the note
     console.log("Sharing note", note.id, " with:", collaborators);
-    try { 
+    try {
       await notesStore.shareNote(note.id, collaborators);
       setIsDialogOpen(false);
     } catch (error) {
-      setApiError(error instanceof Error ? error.message : "Failed to share note");
+      setApiError(
+        error instanceof Error ? error.message : "Failed to share note",
+      );
     }
   };
-  return (  
+  return (
     <>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogTrigger asChild>
@@ -42,14 +44,16 @@ const ShareNote = ({ note }: ShareNoteProps) => {
           <DialogHeader>
             <DialogTitle>Share Note: {note.title} </DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleShare}>
-            <Input
-              placeholder="Enter collaborator emails"
-              type="email"
-              value={collaborators}
-              onChange={(e) => setCollaborators(e.target.value)}
-            />
-            <span className="text-red-500">{apiError}</span>
+          <form onSubmit={handleShare} className="flex flex-row">
+            <div className="mr-1 flex flex-col">
+              <Input
+                placeholder="Enter collaborator emails"
+                type="email"
+                value={collaborators}
+                onChange={(e) => setCollaborators(e.target.value)}
+              />
+              <span className="text-red-500">{apiError}</span>
+            </div>
             <Button type="submit"> Send Invites </Button>
           </form>
         </DialogContent>

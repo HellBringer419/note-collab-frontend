@@ -124,8 +124,9 @@ export default function RegisterPage() {
                     className="mt-1"
                     onChange={(e) => setPassword(e.target.value)}
                   />
-                  <button
+                  <Button
                     type="button"
+                    variant="outline"
                     data-hs-toggle-password='{ "target": "#hs-toggle-password" }'
                     className="flex items-center z-20 mt-1 ml-1 px-3 cursor-pointer text-gray-400 rounded-e-md focus:outline-none focus:text-blue-600 dark:text-neutral-600 dark:focus:text-blue-500"
                     onClick={handleShowPassword}
@@ -173,7 +174,7 @@ export default function RegisterPage() {
                       ></circle>
                     </svg>
                     {/* END OF SVG for password eye */}
-                  </button>
+                  </Button>
                 </div>
                 <small className="text-red-500">{passwordError}</small>
               </div>
@@ -190,8 +191,9 @@ export default function RegisterPage() {
                     className="mt-1"
                     onChange={(e) => setConfirmPassword(e.target.value)}
                   />
-                  <button
+                  <Button
                     type="button"
+                    variant="outline"
                     data-hs-toggle-password='{ "target": "#hs-toggle-password" }'
                     className="flex items-center z-20 mt-1 ml-1 px-3 cursor-pointer text-gray-400 rounded-e-md focus:outline-none focus:text-blue-600 dark:text-neutral-600 dark:focus:text-blue-500"
                     onClick={handleShowConfirmPassword}
@@ -239,7 +241,7 @@ export default function RegisterPage() {
                       ></circle>
                     </svg>
                     {/* END OF SVG for password eye */}
-                  </button>
+                  </Button>
                 </div>
                 <small className="text-red-500">{confirmPasswordError}</small>
               </div>
