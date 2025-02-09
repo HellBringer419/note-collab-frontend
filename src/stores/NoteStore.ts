@@ -1,5 +1,5 @@
 import { getNotesCollaborationAPI } from "@/swagger/apis/notesCollaborationAPI";
-import { Collaboration, GetCollaborators200Item, InviteCollaborator200, Note } from "@/swagger/model";
+import { Collaboration, Note } from "@/swagger/model";
 import { makeAutoObservable, runInAction } from "mobx";
 import userStore from "./UserStore";
 import { AxiosError } from "axios";

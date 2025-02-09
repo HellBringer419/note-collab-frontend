@@ -21,7 +21,6 @@ import { Note } from "@/swagger/model";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "./ui/toaster";
 import ModeToggle from "./mode-toggle";
-import { Label } from "./ui/label";
 
 const NotesList = observer(() => {
   const navigate = useNavigate();
