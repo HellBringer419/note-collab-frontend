@@ -1,5 +1,5 @@
 import { getNotesCollaborationAPI } from "@/swagger/apis/notesCollaborationAPI";
-import { GetCollaborators200Item, InviteCollaborator200, Note } from "@/swagger/model";
+import { Collaboration, GetCollaborators200Item, InviteCollaborator200, Note } from "@/swagger/model";
 import { makeAutoObservable, runInAction } from "mobx";
 import userStore from "./UserStore";
 import { AxiosError } from "axios";
@@ -47,11 +47,12 @@ class NotesStore {
   async addNote(
     title: string,
     description?: string | null,
+    category?: string | null
   ): Promise<Note> {
     const token = userStore.token;
     try {
       const newNote = await api.createNote(
-        { title, description },
+        { title, description, category },
         { headers: { Authorization: `Bearer ${token}` } },
       );
       if (newNote) {
@@ -159,6 +160,7 @@ class NotesStore {
     noteId: number,
     title: string,
     description?: string | null,
+    category?: string | null,
     isMine: boolean = true,
   ) {
     // should addd debounce
@@ -170,6 +172,7 @@ class NotesStore {
         {
           title,
           description,
+          category
         },
         { headers: { Authorization: `Bearer ${token}` } },
       );
@@ -208,7 +211,7 @@ class NotesStore {
   }
 
   // Action to share a Note
-  async shareNote(noteId: number, collaborator: string): Promise<InviteCollaborator200> {
+  async shareNote(noteId: number, collaborator: string): Promise<Collaboration[]> {
     const token = userStore.token;
     try {
 
@@ -245,7 +248,7 @@ class NotesStore {
   }
 
   // Action to get collaborators for a Note
-  async getCollaborators(noteId: number): Promise<GetCollaborators200Item[]> {
+  async getCollaborators(noteId: number): Promise<Collaboration[]> {
     const token = userStore.token;
     try {
       

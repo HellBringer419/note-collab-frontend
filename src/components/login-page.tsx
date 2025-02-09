@@ -160,15 +160,15 @@ export default function LoginPage() {
                 Sign up
               </span>
             </p>
-            <p className="text-center text-sm text-gray-600 mt-2">
-              <span
-                onClick={() => navigate("/forgot-password")}
-                className="cursor-pointer underline font-medium text-blue-600 hover:text-blue-500"
-              >
-                {" "}
-                Forgot your password?
-              </span>
-            </p>
+          {/* <p className="text-center text-sm text-gray-600 mt-2">
+            <span
+              onClick={() => navigate("/forgot-password")}
+              className="cursor-pointer underline font-medium text-blue-600 hover:text-blue-500"
+            >
+              {" "}
+              Forgot your password?
+            </span>
+          </p> */}
           </CardFooter>
         </Card>
       </div>

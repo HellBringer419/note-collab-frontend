@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -11,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import notesStore from "@/stores/NoteStore";
 import userStore from "@/stores/UserStore";
 import dayjs from "dayjs";
-import { PlusCircle } from "lucide-react";
+import { LogOutIcon, PlusCircle } from "lucide-react";
 import { observer } from "mobx-react-lite";
 import { useEffect, useState } from "react";
 import ShareNote from "./share-note";
@@ -20,6 +21,7 @@ import { Note } from "@/swagger/model";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "./ui/toaster";
 import ModeToggle from "./mode-toggle";
+import { Label } from "./ui/label";
 
 const NotesList = observer(() => {
   const navigate = useNavigate();
@@ -96,6 +98,7 @@ const NotesList = observer(() => {
         Collaborative Notes
       </h1>
       <div className="absolute top-6 right-6 flex flex-row">
+        <p> { userStore.user?.email } </p>
         <ModeToggle />
         <Button
           variant="outline"
@@ -105,6 +108,7 @@ const NotesList = observer(() => {
             navigate("/");
           }}
         >
+          <LogOutIcon />
           Logout
         </Button>
       </div>
@@ -129,6 +133,7 @@ const NotesList = observer(() => {
           >
             <CardHeader>
               <CardTitle>Note: {note.title}</CardTitle>
+              <CardDescription>{note.category}</CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-gray-600 mb-4">
@@ -144,7 +149,8 @@ const NotesList = observer(() => {
                         ?.split(" ")
                         .map((name) => name.charAt(0))
                         .join("")
-                        .toUpperCase() ?? "User"}
+                        .toUpperCase()
+                        .slice(0, 2) ?? "User"}
                     </AvatarFallback>
                   </Avatar>
                 ))}

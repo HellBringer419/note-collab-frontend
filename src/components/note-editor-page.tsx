@@ -21,6 +21,7 @@ import { Note } from "@/swagger/model";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "./ui/toaster";
 import ModeToggle from "./mode-toggle";
+import { Label } from "@radix-ui/react-label";
 
 const NoteEditor = observer(() => {
   const navigate = useNavigate();
@@ -87,6 +88,7 @@ const NoteEditor = observer(() => {
             updatedNote.id,
             updatedNote.title ?? "New",
             updatedNote.description,
+            updatedNote.category,
             false,
           );
           return updatedNote;
@@ -144,8 +146,8 @@ const NoteEditor = observer(() => {
 
   const debounceChangeDescription = useCallback(
     debounce(
-      async (id: number, title: string, description: string) => {
-        await notesStore.updateNote(id, title, description, true);
+      async (id: number, title: string, description: string, category?: string) => {
+        await notesStore.updateNote(id, title, description, category, true);
       },
       2_000,
       { trailing: true, leading: false },
@@ -160,6 +162,18 @@ const NoteEditor = observer(() => {
       selectedNote?.id ?? 0,
       title,
       selectedNote?.description,
+      selectedNote?.category,
+      true,
+    );
+  };
+  const handleChangeCategory = (title: string) => {
+    if (selectedNote && selectedNote.id)
+      setSelectedNote({ ...selectedNote, title });
+    notesStore.updateNote(
+      selectedNote?.id ?? 0,
+      title,
+      selectedNote?.description,
+      selectedNote?.category,
       true,
     );
   };
@@ -170,6 +184,7 @@ const NoteEditor = observer(() => {
         selectedNote.id,
         selectedNote.title!,
         description,
+        selectedNote.category
       );
     }
   };
@@ -234,7 +249,18 @@ const NoteEditor = observer(() => {
                 defaultValue={selectedNote?.title ?? ""}
                 onBlur={(e) => handleChangeTitle(e.target.value)}
               />
+
             </div>
+              <div className="items-center ml-0 mx-2 hidden md:flex">
+              <Label htmlFor="category">Category</Label>
+              <Input
+                className="w-64 ml-4 text-sm md:text-md"
+                id="category"
+                placeholder="Note title"
+                defaultValue={selectedNote?.category ?? ""}
+                onBlur={(e) => handleChangeCategory(e.target.value)}
+                />
+                </div>
             <div className="flex items-center space-x-2 self-end">
               {collabs.slice(0, 3).map((collab) => (
                 <Avatar
@@ -248,7 +274,8 @@ const NoteEditor = observer(() => {
                       ?.split(" ")
                       .map((name: any) => name.charAt(0))
                       .join("")
-                      .toUpperCase() ?? "User"}
+                      .toUpperCase()
+                      .slice(0, 2) ?? "User"}
                   </AvatarFallback>
                 </Avatar>
               ))}
@@ -259,6 +286,21 @@ const NoteEditor = observer(() => {
               ) : (
                 <></>
               )}
+              <Avatar
+                className="h-6 w-6"
+                title="This is You"
+              >
+                <AvatarImage src={userStore.user?.avatar} />
+                <AvatarFallback>
+                  {userStore.user?.name
+                    ?.split(" ")
+                    .map((name: any) => name.charAt(0))
+                    .join("")
+                    .toUpperCase()
+                    .slice(0, 2) ?? "US"}
+                </AvatarFallback>
+              </Avatar>
+
               {selectedNote ? (
                 <ShareNote note={selectedNote} />
               ) : (
@@ -294,10 +336,11 @@ const NoteEditor = observer(() => {
           <TooltipTrigger asChild>
             <Button
               className="absolute bottom-10 right-6 rounded-full h-14 w-14"
+              variant="default"
               size="icon"
               onClick={handleDelete}
             >
-              <Trash2 className="h-6 w-6" />
+              <Trash2  className="h-6 w-6" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>
